@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:alpine
+    env:    # variables de entorno para pasarle configuraciones y que el contenedor trabaje con base a eso
+    - name: MI_VARIABLE
+      value: "pelado"
+    - name: MI_OTRA_VARIABLE
+      value: "pelade"
+    - name: DD_AGENT_HOST   # tome el valor de la API de kubernetes y que se traiga la IP del host donde va correr este Pod
+      valueFrom:
+        fieldRef:
+          fieldPath: status.hostIP      # IP del host donde está corriendo este Pod
+    resources:      # forma de asignarle recursos a nuestros contenedores (esto es por contenedor no por Pod)
+      requests:   # recursos que le vamos a garantizar a este Pod que siempre va tener disponible 
+        memory: "64Mi"
+        cpu: "200m"
+      limits:   # limite de memoria y cpu que el pod puede utilizar
+        memory: "128Mi"
+        cpu: "500m"
+    readinessProbe:   # es una forma de explicarle a kubernetes que tu pod está listo para recibir trafico
+      httpGet:      # pegarle al path / y esperar un status code 200
+        path: /
+        port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    livenessProbe:    # es una forma de explicarle a kubernetes que tu pod está vivo, que no lo mate
+      tcpSocket:      # chequear que el puerto 80 esté abierto
+        port: 80
+      initialDelaySeconds: 15
+      periodSeconds: 20
+    ports:
+      - containerPort: 80

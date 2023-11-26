@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      role: hello
+  template:
+    metadata:
+      labels:
+        role: hello     # esto es importante
+    spec:
+      containers:
+      - name: hello
+        image: gcr.io/google-samples/hello-app:1.0
+        ports:
+        - containerPort: 8080   # exponemos el puerto 8080
+
+---
+apiVersion: v1
+kind: Service   
+metadata:
+  name: hello # por defecto es clusterIP
+spec:
+  ports:
+  - port: 8080    
+    targetPort: 8080    # apunta al puerto 8080 del contenedor de arriba
+  selector:     # acá es donde la magia sucede, le decimos al servicio que use el selector la etiqueta role el valor hello
+    role: hello   
